@@ -125,7 +125,10 @@ namespace MyStartup
             for (int i = 0; i < gridViewData.Rows.Count; i++)
             {
                 string strDomain = gridViewData.Rows[i][2].ToString();
-                if (dic.ContainsKey(strDomain))
+                DateTime lastVisit = DateTime.MinValue;
+                if (dic.ContainsKey(strDomain) && 
+                    DateTime.TryParse(gridViewData.Rows[i][4].ToString(), out lastVisit) &&
+                    dic[strDomain] > lastVisit)
                 {
                     gridViewData.Rows[i][4] = dic[strDomain].ToString("yyyy-MM-dd HH:mm:ss");
                 }

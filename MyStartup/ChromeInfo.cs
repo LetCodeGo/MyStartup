@@ -137,7 +137,7 @@ namespace MyStartup
             {
                 conn.Open();
                 using (SQLiteCommand cmd = new SQLiteCommand(
-                    "select url, last_visit_time from urls order by last_visit_time desc;", conn))
+                    "select url, last_visit_time from urls where last_visit_time > 0 order by last_visit_time desc;", conn))
                 {
                     SQLiteDataReader dr = cmd.ExecuteReader();
                     if (domainNameList != null)
