@@ -116,6 +116,31 @@ namespace MyStartup
                 gridViewData.Rows.Add(dr);
             }
 
+            lock (lockThreadObject)
+            {
+                UpdateByChromeHistory(false);
+                UpdateNeededTime();
+            }
+            this.dataGridView.DataSource = gridViewData;
+
+            Thread thread = new Thread(new ThreadStart(ThreadAction));
+            thread.Start();
+
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void UpdateByChromeHistory(bool isPopUp)
+        {
+            if (System.Diagnostics.Process.GetProcessesByName("Chrome").Length > 0)
+            {
+                if (isPopUp)
+                {
+                    MessageBox.Show("Chrome 已在运行，请关闭后再执行此操作！",
+                        "消息", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                return;
+            }
+
             List<string> domainList = new List<string>();
             for (int i = 0; i < gridViewData.Rows.Count; i++)
             {
@@ -126,21 +151,13 @@ namespace MyStartup
             {
                 string strDomain = gridViewData.Rows[i][2].ToString();
                 DateTime lastVisit = DateTime.MinValue;
-                if (dic.ContainsKey(strDomain) && 
+                if (dic.ContainsKey(strDomain) &&
                     DateTime.TryParse(gridViewData.Rows[i][4].ToString(), out lastVisit) &&
                     dic[strDomain] > lastVisit)
                 {
                     gridViewData.Rows[i][4] = dic[strDomain].ToString("yyyy-MM-dd HH:mm:ss");
                 }
             }
-
-            UpdateNeededTime();
-            this.dataGridView.DataSource = gridViewData;
-
-            Thread thread = new Thread(new ThreadStart(ThreadAction));
-            thread.Start();
-
-            this.WindowState = FormWindowState.Minimized;
         }
 
         private void ThreadAction()
@@ -560,6 +577,16 @@ namespace MyStartup
 
                 UpdateDataGridView();
             }
+        }
+
+        private void ButtonUpdateLastVisitByChromeHistory_Click(object sender, EventArgs e)
+        {
+            lock (lockThreadObject)
+            {
+                UpdateByChromeHistory(true);
+                UpdateNeededTime();
+            }
+            UpdateDataGridView();
         }
     }
 }

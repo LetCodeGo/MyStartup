@@ -21,13 +21,6 @@ namespace MyStartup
             {
                 if (flag)
                 {
-                    if (System.Diagnostics.Process.GetProcessesByName("Chrome").Length > 0)
-                    {
-                        MessageBox.Show("Chrome 已在运行，请关闭后再运行此程序！",
-                            "消息", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        return;
-                    }
-
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new MainForm());

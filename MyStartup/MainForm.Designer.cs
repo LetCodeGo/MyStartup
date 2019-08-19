@@ -61,6 +61,7 @@
             this.textBoxDelayHour = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.labelInfo = new System.Windows.Forms.Label();
+            this.buttonUpdateLastVisitByChromeHistory = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.groupBoxAdd.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
@@ -329,11 +330,23 @@
             this.labelInfo.TabIndex = 14;
             this.labelInfo.Text = "到 0000-00-00 00:00:00 结束";
             // 
+            // buttonUpdateLastVisitByChromeHistory
+            // 
+            this.buttonUpdateLastVisitByChromeHistory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonUpdateLastVisitByChromeHistory.Location = new System.Drawing.Point(791, 154);
+            this.buttonUpdateLastVisitByChromeHistory.Name = "buttonUpdateLastVisitByChromeHistory";
+            this.buttonUpdateLastVisitByChromeHistory.Size = new System.Drawing.Size(205, 47);
+            this.buttonUpdateLastVisitByChromeHistory.TabIndex = 15;
+            this.buttonUpdateLastVisitByChromeHistory.Text = "更新上次访问时间（通过Chrome历史记录，Chrome需关闭）";
+            this.buttonUpdateLastVisitByChromeHistory.UseVisualStyleBackColor = true;
+            this.buttonUpdateLastVisitByChromeHistory.Click += new System.EventHandler(this.ButtonUpdateLastVisitByChromeHistory_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1008, 537);
+            this.Controls.Add(this.buttonUpdateLastVisitByChromeHistory);
             this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBoxDelayHour);
@@ -388,6 +401,7 @@
         private System.Windows.Forms.TextBox textBoxDelayHour;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label labelInfo;
+        private System.Windows.Forms.Button buttonUpdateLastVisitByChromeHistory;
     }
 }
 
