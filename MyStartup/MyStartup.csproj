@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIWrapper.cs" />
     <Compile Include="ChromeInfo.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="MainForm.cs">

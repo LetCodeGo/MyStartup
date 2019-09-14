@@ -45,7 +45,6 @@
             this.ColumnLast = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnNeed = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBoxInterval = new System.Windows.Forms.TextBox();
-            this.textBoxDomain = new System.Windows.Forms.TextBox();
             this.textBoxURL = new System.Windows.Forms.TextBox();
             this.groupBoxAdd = new System.Windows.Forms.GroupBox();
             this.buttonAdd = new System.Windows.Forms.Button();
@@ -193,17 +192,10 @@
             // 
             // textBoxInterval
             // 
-            this.textBoxInterval.Location = new System.Drawing.Point(6, 74);
+            this.textBoxInterval.Location = new System.Drawing.Point(6, 47);
             this.textBoxInterval.Name = "textBoxInterval";
             this.textBoxInterval.Size = new System.Drawing.Size(193, 21);
             this.textBoxInterval.TabIndex = 7;
-            // 
-            // textBoxDomain
-            // 
-            this.textBoxDomain.Location = new System.Drawing.Point(6, 47);
-            this.textBoxDomain.Name = "textBoxDomain";
-            this.textBoxDomain.Size = new System.Drawing.Size(193, 21);
-            this.textBoxDomain.TabIndex = 8;
             // 
             // textBoxURL
             // 
@@ -214,21 +206,20 @@
             // 
             // groupBoxAdd
             // 
-            this.groupBoxAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxAdd.Controls.Add(this.buttonAdd);
             this.groupBoxAdd.Controls.Add(this.textBoxURL);
             this.groupBoxAdd.Controls.Add(this.textBoxInterval);
-            this.groupBoxAdd.Controls.Add(this.textBoxDomain);
-            this.groupBoxAdd.Location = new System.Drawing.Point(791, 387);
+            this.groupBoxAdd.Location = new System.Drawing.Point(791, 414);
             this.groupBoxAdd.Name = "groupBoxAdd";
-            this.groupBoxAdd.Size = new System.Drawing.Size(205, 138);
+            this.groupBoxAdd.Size = new System.Drawing.Size(205, 111);
             this.groupBoxAdd.TabIndex = 10;
             this.groupBoxAdd.TabStop = false;
             this.groupBoxAdd.Text = "添加";
             // 
             // buttonAdd
             // 
-            this.buttonAdd.Location = new System.Drawing.Point(6, 101);
+            this.buttonAdd.Location = new System.Drawing.Point(6, 74);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(193, 23);
             this.buttonAdd.TabIndex = 10;
@@ -306,6 +297,7 @@
             // 
             // textBoxDelayHour
             // 
+            this.textBoxDelayHour.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxDelayHour.Location = new System.Drawing.Point(850, 81);
             this.textBoxDelayHour.Name = "textBoxDelayHour";
             this.textBoxDelayHour.Size = new System.Drawing.Size(39, 21);
@@ -314,6 +306,7 @@
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(892, 85);
             this.label1.Name = "label1";
@@ -323,6 +316,7 @@
             // 
             // labelInfo
             // 
+            this.labelInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.labelInfo.AutoSize = true;
             this.labelInfo.Location = new System.Drawing.Point(826, 116);
             this.labelInfo.Name = "labelInfo";
@@ -379,7 +373,6 @@
         private System.Windows.Forms.CheckBox cbBlockSystemSleep;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.TextBox textBoxInterval;
-        private System.Windows.Forms.TextBox textBoxDomain;
         private System.Windows.Forms.TextBox textBoxURL;
         private System.Windows.Forms.GroupBox groupBoxAdd;
         private System.Windows.Forms.Button buttonAdd;

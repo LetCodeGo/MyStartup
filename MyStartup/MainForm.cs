@@ -6,6 +6,7 @@ using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,11 @@ namespace MyStartup
         private static readonly object lockThreadObject = new object();
         private DataTable gridViewData = null;
         private DateTime? notAutoVisitTime = null;
+
+        bool RunningFullScreenApp = false;
+        private IntPtr desktopHandle;
+        private IntPtr shellHandle;
+        int uCallBackMsg;
 
         public MainForm()
         {
@@ -126,7 +132,59 @@ namespace MyStartup
             Thread thread = new Thread(new ThreadStart(ThreadAction));
             thread.Start();
 
+            RegisterAppBar(false);
+
             this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void RegisterAppBar(bool registered)
+        {
+            APPBARDATA abd = new APPBARDATA();
+            abd.cbSize = Marshal.SizeOf(abd);
+            abd.hWnd = this.Handle;
+
+            desktopHandle = APIWrapper.GetDesktopWindow();
+            shellHandle = APIWrapper.GetShellWindow();
+            if (!registered)
+            {
+                //register
+                uCallBackMsg = APIWrapper.RegisterWindowMessage("APPBARMSG_CSDN_HELPER");
+                abd.uCallbackMessage = uCallBackMsg;
+                uint ret = APIWrapper.SHAppBarMessage((int)ABMsg.ABM_NEW, ref abd);
+            }
+            else
+            {
+                APIWrapper.SHAppBarMessage((int)ABMsg.ABM_REMOVE, ref abd);
+            }
+        }
+
+        protected override void WndProc(ref System.Windows.Forms.Message m)
+        {
+            if (m.Msg == uCallBackMsg)
+            {
+                switch (m.WParam.ToInt32())
+                {
+                    case (int)ABNotify.ABN_FULLSCREENAPP:
+                        {
+                            IntPtr hWnd = APIWrapper.GetForegroundWindow();
+                            //判断当前全屏的应用是否是桌面
+                            if (hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle))
+                            {
+                                RunningFullScreenApp = false;
+                                break;
+                            }
+                            //判断是否全屏
+                            if ((int)m.LParam == 1)
+                                this.RunningFullScreenApp = true;
+                            else
+                                this.RunningFullScreenApp = false;
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+            base.WndProc(ref m);
         }
 
         private void UpdateByChromeHistory(bool isPopUp)
@@ -169,12 +227,13 @@ namespace MyStartup
             {
                 for (int i = 0; i < 300; i++)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(200);
                     if (exitFlag) break;
                 }
                 if (exitFlag) break;
 
-                if (Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc))) continue;
+                if (this.RunningFullScreenApp ||
+                    Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc))) continue;
 
                 lock (lockThreadObject)
                 {
@@ -264,6 +323,7 @@ namespace MyStartup
             {
                 SaveConfig();
                 SystemSleepManagement.ResotreSleep();
+                RegisterAppBar(true);
             }
             else
             {
@@ -273,13 +333,7 @@ namespace MyStartup
                         exitFlag = true;
                         SaveConfig();
                         SystemSleepManagement.ResotreSleep();
-                        break;
-                    case CloseReason.None:
-                    case CloseReason.MdiFormClosing:
-                    case CloseReason.ApplicationExitCall:
-                    case CloseReason.TaskManagerClosing:
-                    case CloseReason.FormOwnerClosing:
-                        SystemSleepManagement.ResotreSleep();
+                        RegisterAppBar(true);
                         break;
                     case CloseReason.UserClosing:
                         e.Cancel = true;
@@ -392,17 +446,17 @@ namespace MyStartup
 
         private void ButtonAdd_Click(object sender, EventArgs e)
         {
-            string url = this.textBoxURL.Text;
-            string domian = this.textBoxDomain.Text;
+            string url = this.textBoxURL.Text.Trim();
             double interval = -1;
             if (string.IsNullOrWhiteSpace(url) ||
-                string.IsNullOrWhiteSpace(domian) ||
                 string.IsNullOrWhiteSpace(this.textBoxInterval.Text) ||
                 (!double.TryParse(this.textBoxInterval.Text, out interval)))
             {
                 MessageBox.Show("输入字符不合法");
                 return;
             }
+
+            string domian = GetURLDomain(url);
 
             for (int i = 0; i < gridViewData.Rows.Count; i++)
             {
@@ -426,8 +480,8 @@ namespace MyStartup
 
                 DataRow dr = gridViewData.NewRow();
                 dr[0] = maxIndex;
-                dr[1] = this.textBoxURL.Text;
-                dr[2] = this.textBoxDomain.Text;
+                dr[1] = url;
+                dr[2] = domian;
                 dr[3] = interval;
                 dr[4] = DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss");
                 dr[5] = -1;
@@ -439,6 +493,24 @@ namespace MyStartup
 
                 UpdateDataGridView();
             }
+        }
+
+        private string GetURLDomain(string URL)
+        {
+            int i1 = URL.IndexOf("://");
+            int i2 = URL.IndexOf('/', i1 + 3);
+            string domainName = URL.Substring(i1 + 3);
+            if (i2 != -1)
+            {
+                domainName = URL.Substring(i1 + 3, i2 - i1 - 3);
+            }
+            int i3 = domainName.IndexOf('@');
+            if (i3 != -1)
+            {
+                domainName = domainName.Substring(i3 + 1);
+            }
+
+            return domainName;
         }
 
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)

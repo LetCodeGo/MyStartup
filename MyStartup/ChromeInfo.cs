@@ -182,6 +182,7 @@ namespace MyStartup
                             dic.Add(dr[0].ToString(), new DateTime(dr.GetInt64(1)));
                         }
                     }
+                    dr.Close();
                 }
                 conn.Close();
             }

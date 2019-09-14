@@ -46,8 +46,7 @@ namespace MyStartup
         private static readonly object lockObject = new object();
         private static Config instance = null;
         private static readonly string ConfigFilePath =
-            Path.Combine(Environment.GetFolderPath(
-                Environment.SpecialFolder.ApplicationData), "MyStartup", "config.xml");
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
 
         private Config() { }
 
