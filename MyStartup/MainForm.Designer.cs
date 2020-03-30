@@ -196,6 +196,7 @@
             this.textBoxInterval.Name = "textBoxInterval";
             this.textBoxInterval.Size = new System.Drawing.Size(193, 21);
             this.textBoxInterval.TabIndex = 7;
+            this.textBoxInterval.Text = "10";
             // 
             // textBoxURL
             // 
@@ -203,6 +204,7 @@
             this.textBoxURL.Name = "textBoxURL";
             this.textBoxURL.Size = new System.Drawing.Size(193, 21);
             this.textBoxURL.TabIndex = 9;
+            this.textBoxURL.Text = "https://redacted.ch/";
             // 
             // groupBoxAdd
             // 

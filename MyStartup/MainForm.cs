@@ -118,7 +118,7 @@ namespace MyStartup
                 dr[2] = urlTimedAccess.Domain;
                 dr[3] = urlTimedAccess.Interval;
                 dr[4] = urlTimedAccess.Last;
-                dr[5] = "-1";
+                dr[5] = 0;
                 gridViewData.Rows.Add(dr);
             }
 
@@ -239,7 +239,7 @@ namespace MyStartup
                 {
                     List<int> indexList = null;
                     while ((indexList = UpdateNeededTime()).Count > 0)
-                    { VisitURLs(indexList); }
+                    { VisitURLs(indexList, false); }
 
                     this.Invoke(UpdateDataGridViewAction);
                 }
@@ -284,35 +284,30 @@ namespace MyStartup
             {
                 double setDays = Convert.ToDouble(gridViewData.Rows[i][3]);
 
-                if (setDays <= 0)
-                {
-                    gridViewData.Rows[i][5] = "-1";
-                }
-                else
-                {
-                    long needTime = Convert.ToInt64(
-                        (DateTime.Parse(gridViewData.Rows[i][4].ToString()) - DateTime.Now).TotalSeconds + setDays * 86400);
-                    if (needTime <= 0)
-                    {
-                        gridViewData.Rows[i][5] = "0";
-                        indexList.Add(i);
-                    }
-                    else
-                    {
-                        gridViewData.Rows[i][5] =
-                            string.Format("{0:F}", (double)needTime / 3600);
-                    }
-                }
+                long needTime = Convert.ToInt64((DateTime.Parse(
+                    gridViewData.Rows[i][4].ToString()) - DateTime.Now).TotalSeconds + setDays * 86400);
+                gridViewData.Rows[i][5] = string.Format("{0:F}", (double)needTime / 3600);
+                if (setDays > 0 && needTime <= 0) indexList.Add(i);
             }
             return indexList;
         }
 
-        private void VisitURLs(List<int> indexList)
+        private void VisitURLs(List<int> indexList, bool isIngoreChromeRunning)
         {
+            bool isChromeRunning =
+                (System.Diagnostics.Process.GetProcessesByName("Chrome").Length > 0);
+
             foreach (int index in indexList)
             {
-                System.Diagnostics.Process.Start(gridViewData.Rows[index][1].ToString());
-                gridViewData.Rows[index][4] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                bool isTooLong =
+                    ((DateTime.Now - DateTime.Parse(gridViewData.Rows[index][4].ToString())).TotalSeconds >=
+                    Convert.ToDouble(gridViewData.Rows[index][3]) * 86400 * 2);
+
+                if (isTooLong || isIngoreChromeRunning || isChromeRunning)
+                {
+                    System.Diagnostics.Process.Start(gridViewData.Rows[index][1].ToString());
+                    gridViewData.Rows[index][4] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                }
             }
         }
 
@@ -456,6 +451,12 @@ namespace MyStartup
                 return;
             }
 
+            if (interval <= 0)
+            {
+                MessageBox.Show("时间间隔数应为一个大于0的数");
+                return;
+            }
+
             string domian = GetURLDomain(url);
 
             for (int i = 0; i < gridViewData.Rows.Count; i++)
@@ -484,12 +485,12 @@ namespace MyStartup
                 dr[2] = domian;
                 dr[3] = interval;
                 dr[4] = DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss");
-                dr[5] = -1;
+                dr[5] = 0;
                 gridViewData.Rows.Add(dr);
 
                 List<int> indexList = null;
                 while ((indexList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(indexList); }
+                { VisitURLs(indexList, true); }
 
                 UpdateDataGridView();
             }
@@ -576,7 +577,7 @@ namespace MyStartup
 
             lock (lockThreadObject)
             {
-                do { VisitURLs(visitList); }
+                do { VisitURLs(visitList, true); }
                 while ((visitList = UpdateNeededTime()).Count > 0);
 
                 UpdateDataGridView();
@@ -645,7 +646,7 @@ namespace MyStartup
                 }
 
                 while ((updateList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(updateList); }
+                { VisitURLs(updateList, true); }
 
                 UpdateDataGridView();
             }
