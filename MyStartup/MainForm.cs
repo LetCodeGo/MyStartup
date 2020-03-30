@@ -26,6 +26,9 @@ namespace MyStartup
         private IntPtr shellHandle;
         int uCallBackMsg;
 
+        private int startStopTimeId = -1;
+        private Sqlite sqlite = null;
+
         public MainForm()
         {
             InitializeComponent();
@@ -133,6 +136,10 @@ namespace MyStartup
             thread.Start();
 
             RegisterAppBar(false);
+
+            this.sqlite = new Sqlite(Sqlite.SqliteDefaultDateBasePath);
+            this.sqlite.CreateStartStopTimeTable();
+            this.startStopTimeId = sqlite.InsertStartTime(DateTime.Now);
 
             this.WindowState = FormWindowState.Minimized;
         }
@@ -317,6 +324,7 @@ namespace MyStartup
             if (exitFlag)
             {
                 SaveConfig();
+                this.sqlite.UpdateStopTime(this.startStopTimeId, DateTime.Now);
                 SystemSleepManagement.ResotreSleep();
                 RegisterAppBar(true);
             }
@@ -324,12 +332,6 @@ namespace MyStartup
             {
                 switch (e.CloseReason)
                 {
-                    case CloseReason.WindowsShutDown:
-                        exitFlag = true;
-                        SaveConfig();
-                        SystemSleepManagement.ResotreSleep();
-                        RegisterAppBar(true);
-                        break;
                     case CloseReason.UserClosing:
                         e.Cancel = true;
                         this.WindowState = FormWindowState.Minimized;
@@ -337,7 +339,11 @@ namespace MyStartup
                         this.notifyIcon.Visible = true;
                         break;
                     default:
+                        exitFlag = true;
+                        SaveConfig();
+                        this.sqlite.UpdateStopTime(this.startStopTimeId, DateTime.Now);
                         SystemSleepManagement.ResotreSleep();
+                        RegisterAppBar(true);
                         break;
                 }
             }

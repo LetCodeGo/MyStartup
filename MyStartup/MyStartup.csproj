@@ -74,6 +74,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sqlite.cs" />
     <Compile Include="StartWithSystem.cs" />
     <Compile Include="SystemSleepManagement.cs" />
     <EmbeddedResource Include="MainForm.resx">
