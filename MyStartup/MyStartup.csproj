@@ -60,6 +60,13 @@
     <Compile Include="APIWrapper.cs" />
     <Compile Include="ChromeInfo.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="LogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogForm.Designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +84,10 @@
     <Compile Include="Sqlite.cs" />
     <Compile Include="StartWithSystem.cs" />
     <Compile Include="SystemSleepManagement.cs" />
+    <Compile Include="Win32API.cs" />
+    <EmbeddedResource Include="LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

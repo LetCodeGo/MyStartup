@@ -29,6 +29,9 @@ namespace MyStartup
         private int startStopTimeId = -1;
         private Sqlite sqlite = null;
 
+        public static String MyStartupApplicationDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyStartup");
+
         public MainForm()
         {
             InitializeComponent();
@@ -140,6 +143,9 @@ namespace MyStartup
             this.sqlite = new Sqlite(Sqlite.SqliteDefaultDateBasePath);
             this.sqlite.CreateStartStopTimeTable();
             this.startStopTimeId = sqlite.InsertStartTime(DateTime.Now);
+
+            if (!Directory.Exists(MyStartupApplicationDataFolder))
+                Directory.CreateDirectory(MyStartupApplicationDataFolder);
 
             this.WindowState = FormWindowState.Minimized;
         }
@@ -666,6 +672,39 @@ namespace MyStartup
                 UpdateNeededTime();
             }
             UpdateDataGridView();
+        }
+
+        private void btnOutputAllStartAndStopTime_Click(object sender, EventArgs e)
+        {
+            DataTable dt1 = this.sqlite.GetStartStopTimeTableAllData();
+            DataTable dt2 = new DataTable();
+            List<int> dateTimeColumnIndexList = new List<int>();
+            foreach (DataColumn dc1 in dt1.Columns)
+            {
+                if (dc1.DataType == typeof(DateTime))
+                {
+                    dt2.Columns.Add(dc1.ColumnName, typeof(string));
+                    dateTimeColumnIndexList.Add(dc1.Ordinal);
+                }
+                else dt2.Columns.Add(dc1.ColumnName, dc1.DataType);
+            }
+            foreach (DataRow dr1 in dt1.Rows)
+            {
+                DataRow dr2 = dt2.NewRow();
+                for (int i = 0; i < dt1.Columns.Count; i++)
+                {
+                    if (dateTimeColumnIndexList.Contains(i))
+                        dr2[i] = ((DateTime)dr1[i]).ToString("yyyy-MM-dd hh:mm:ss");
+                    else dr2[i] = dr1[i];
+                }
+                dt2.Rows.Add(dr2);
+            }
+            string dtString = Helper.DataTableFormatToString(dt2, null);
+
+            String filePath = Path.Combine(MyStartupApplicationDataFolder, "MyStartupTemp.txt");
+            File.WriteAllText(filePath, dtString, System.Text.Encoding.UTF8);
+
+            Helper.OpenEdit(filePath, dtString);
         }
     }
 }

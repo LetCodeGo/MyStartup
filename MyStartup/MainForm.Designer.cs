@@ -61,6 +61,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.labelInfo = new System.Windows.Forms.Label();
             this.buttonUpdateLastVisitByChromeHistory = new System.Windows.Forms.Button();
+            this.btnOutputAllStartAndStopTime = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.groupBoxAdd.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
@@ -337,11 +338,23 @@
             this.buttonUpdateLastVisitByChromeHistory.UseVisualStyleBackColor = true;
             this.buttonUpdateLastVisitByChromeHistory.Click += new System.EventHandler(this.ButtonUpdateLastVisitByChromeHistory_Click);
             // 
+            // btnOutputAllStartAndStopTime
+            // 
+            this.btnOutputAllStartAndStopTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOutputAllStartAndStopTime.Location = new System.Drawing.Point(791, 227);
+            this.btnOutputAllStartAndStopTime.Name = "btnOutputAllStartAndStopTime";
+            this.btnOutputAllStartAndStopTime.Size = new System.Drawing.Size(205, 47);
+            this.btnOutputAllStartAndStopTime.TabIndex = 16;
+            this.btnOutputAllStartAndStopTime.Text = "输出开关机时间数据";
+            this.btnOutputAllStartAndStopTime.UseVisualStyleBackColor = true;
+            this.btnOutputAllStartAndStopTime.Click += new System.EventHandler(this.btnOutputAllStartAndStopTime_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1008, 537);
+            this.Controls.Add(this.btnOutputAllStartAndStopTime);
             this.Controls.Add(this.buttonUpdateLastVisitByChromeHistory);
             this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.label1);
@@ -397,6 +410,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label labelInfo;
         private System.Windows.Forms.Button buttonUpdateLastVisitByChromeHistory;
+        private System.Windows.Forms.Button btnOutputAllStartAndStopTime;
     }
 }
 
