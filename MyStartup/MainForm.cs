@@ -26,7 +26,10 @@ namespace MyStartup
         private IntPtr shellHandle;
         int uCallBackMsg;
 
+        private static int WM_QUERYENDSESSION = 0x11;
+        private bool systemShutdown = false;
         private int startStopTimeId = -1;
+        private DateTime stopDateTime = DateTime.MinValue;
         private Sqlite sqlite = null;
 
         public static String MyStartupApplicationDataFolder = Path.Combine(
@@ -161,7 +164,7 @@ namespace MyStartup
             if (!registered)
             {
                 //register
-                uCallBackMsg = APIWrapper.RegisterWindowMessage("APPBARMSG_CSDN_HELPER");
+                uCallBackMsg = APIWrapper.RegisterWindowMessage("APPBARMSG_MYSTARTUP");
                 abd.uCallbackMessage = uCallBackMsg;
                 uint ret = APIWrapper.SHAppBarMessage((int)ABMsg.ABM_NEW, ref abd);
             }
@@ -197,6 +200,13 @@ namespace MyStartup
                         break;
                 }
             }
+            else if (m.Msg == WM_QUERYENDSESSION)
+            {
+                stopDateTime = DateTime.Now;
+                exitFlag = true;
+                systemShutdown = true;
+            }
+
             base.WndProc(ref m);
         }
 
@@ -330,7 +340,8 @@ namespace MyStartup
             if (exitFlag)
             {
                 SaveConfig();
-                this.sqlite.UpdateStopTime(this.startStopTimeId, DateTime.Now);
+                if (stopDateTime == DateTime.MinValue) stopDateTime = DateTime.Now;
+                this.sqlite.UpdateStopTime(this.startStopTimeId, stopDateTime, !systemShutdown);
                 SystemSleepManagement.ResotreSleep();
                 RegisterAppBar(true);
             }
@@ -347,7 +358,8 @@ namespace MyStartup
                     default:
                         exitFlag = true;
                         SaveConfig();
-                        this.sqlite.UpdateStopTime(this.startStopTimeId, DateTime.Now);
+                        if (stopDateTime == DateTime.MinValue) stopDateTime = DateTime.Now;
+                        this.sqlite.UpdateStopTime(this.startStopTimeId, stopDateTime, !systemShutdown);
                         SystemSleepManagement.ResotreSleep();
                         RegisterAppBar(true);
                         break;

@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyStartup
 {
@@ -30,6 +27,7 @@ namespace MyStartup
             cmdText += String.Format(@"{0} integer primary key AUTOINCREMENT, ", "id");
             cmdText += String.Format(@"{0} datetime not null, ", "start_time");
             cmdText += String.Format(@"{0} datetime not null, ", "stop_time");
+            cmdText += String.Format(@"{0} bool not null, ", "manual_exit");
             cmdText += String.Format(@"{0} bool not null );", "complete");
 
             ExecuteNonQueryGetAffected(cmdText, null);
@@ -44,27 +42,29 @@ namespace MyStartup
         public int InsertStartTime(DateTime startTime)
         {
             String cmdText = String.Format(
-                @"insert into {0} (start_time, stop_time, complete) values(
-                @start_time, @stop_time, @complete);select last_insert_rowid() from {0};",
+                @"insert into {0} (start_time, stop_time, manual_exit, complete) values(
+                @start_time, @stop_time, @manual_exit, @complete);select last_insert_rowid() from {0};",
                 "start_stop_time");
 
             Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
             sqlParamDic.Add("@start_time", startTime);
             sqlParamDic.Add("@stop_time", startTime);
+            sqlParamDic.Add("@manual_exit", false);
             sqlParamDic.Add("@complete", false);
 
             return ExecuteScalarGetNum(cmdText, sqlParamDic);
         }
 
-        public void UpdateStopTime(int id, DateTime stopTime)
+        public void UpdateStopTime(int id, DateTime stopTime, bool manualExit)
         {
             String cmdText = String.Format(
-                "update {0} set stop_time=@stop_time,complete=@complete where id=@id;",
+                "update {0} set stop_time=@stop_time,manual_exit=@manual_exit,complete=@complete where id=@id;",
                 "start_stop_time");
 
             Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
             sqlParamDic.Add("@id", id);
             sqlParamDic.Add("@stop_time", stopTime);
+            sqlParamDic.Add("@manual_exit", manualExit);
             sqlParamDic.Add("@complete", true);
 
             ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
