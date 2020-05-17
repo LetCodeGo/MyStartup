@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -145,6 +146,20 @@ namespace MyStartup
 
             this.sqlite = new Sqlite(Sqlite.SqliteDefaultDateBasePath);
             this.sqlite.CreateStartStopTimeTable();
+
+            //DateTime lastShutdownTime = Helper.GetSystemLastShutdownTime();
+            //if (lastShutdownTime != DateTime.MinValue)
+            //{
+            //    DataTable dt = this.sqlite.GetLastRowData();
+            //    if (dt != null && dt.Rows.Count == 1 &&
+            //        Convert.ToBoolean(dt.Rows[0]["complete"]) &&
+            //        (!Convert.ToBoolean(dt.Rows[0]["manual_exit"])))
+            //    {
+            //        this.sqlite.UpdateStopTime(Convert.ToInt32(dt.Rows[0]["id"]),
+            //            lastShutdownTime, false);
+            //    }
+            //}
+
             this.startStopTimeId = sqlite.InsertStartTime(DateTime.Now);
 
             if (!Directory.Exists(MyStartupApplicationDataFolder))
@@ -256,13 +271,14 @@ namespace MyStartup
                 if (exitFlag) break;
 
                 if (this.RunningFullScreenApp ||
-                    Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc))) continue;
+                    Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc)) ||
+                    Process.GetProcessesByName("Chrome").Length == 0) continue;
 
                 lock (lockThreadObject)
                 {
                     List<int> indexList = null;
                     while ((indexList = UpdateNeededTime()).Count > 0)
-                    { VisitURLs(indexList, false); }
+                    { VisitURLs(indexList); }
 
                     this.Invoke(UpdateDataGridViewAction);
                 }
@@ -315,18 +331,15 @@ namespace MyStartup
             return indexList;
         }
 
-        private void VisitURLs(List<int> indexList, bool isIngoreChromeRunning)
+        private void VisitURLs(List<int> indexList)
         {
-            bool isChromeRunning =
-                (System.Diagnostics.Process.GetProcessesByName("Chrome").Length > 0);
-
             foreach (int index in indexList)
             {
                 bool isTooLong =
                     ((DateTime.Now - DateTime.Parse(gridViewData.Rows[index][4].ToString())).TotalSeconds >=
                     Convert.ToDouble(gridViewData.Rows[index][3]) * 86400 * 2);
 
-                if (isTooLong || isIngoreChromeRunning || isChromeRunning)
+                if (isTooLong)
                 {
                     System.Diagnostics.Process.Start(gridViewData.Rows[index][1].ToString());
                     gridViewData.Rows[index][4] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -514,7 +527,7 @@ namespace MyStartup
 
                 List<int> indexList = null;
                 while ((indexList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(indexList, true); }
+                { VisitURLs(indexList); }
 
                 UpdateDataGridView();
             }
@@ -601,7 +614,7 @@ namespace MyStartup
 
             lock (lockThreadObject)
             {
-                do { VisitURLs(visitList, true); }
+                do { VisitURLs(visitList); }
                 while ((visitList = UpdateNeededTime()).Count > 0);
 
                 UpdateDataGridView();
@@ -670,7 +683,7 @@ namespace MyStartup
                 }
 
                 while ((updateList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(updateList, true); }
+                { VisitURLs(updateList); }
 
                 UpdateDataGridView();
             }

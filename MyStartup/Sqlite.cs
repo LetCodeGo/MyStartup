@@ -70,6 +70,19 @@ namespace MyStartup
             ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
+        public int GetMaxId()
+        {
+            String cmdText = String.Format("select max(id) from {0};", "start_stop_time");
+            return ExecuteScalarGetNum(cmdText, null);
+        }
+
+        public DataTable GetLastRowData()
+        {
+            String cmdText = String.Format("select * from {0} order by id desc limit 1;",
+                "start_stop_time");
+            return ExecuteReaderGetAll(cmdText, null);
+        }
+
         private int ExecuteNonQueryGetAffected(
             String cmdText, Dictionary<String, Object> sqlParamDic = null)
         {

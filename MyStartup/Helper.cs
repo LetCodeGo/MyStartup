@@ -5,6 +5,7 @@ using System.Linq;
 using System.Data;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace MyStartup
 {
@@ -237,6 +238,32 @@ namespace MyStartup
             }
 
             return rstStr;
+        }
+
+        public static DateTime GetSystemLastShutdownTime()
+        {
+            //string sKey = @"System\CurrentControlSet\Control\Windows";
+            //Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(sKey);
+
+            //string sValueName = "ShutdownTime";
+            //byte[] val = (byte[])key.GetValue(sValueName);
+            //long valueAsLong = BitConverter.ToInt64(val, 0);
+            //return DateTime.FromFileTime(valueAsLong);
+
+            if (EventLog.Exists("System"))
+            {
+                var log = new EventLog("System", Environment.MachineName, "EventLog");
+
+                var entries = new EventLogEntry[log.Entries.Count];
+                log.Entries.CopyTo(entries, 0);
+
+                var startupTimes = entries.Where(x => x.InstanceId == 2147489653).Select(x => x.TimeWritten);
+                var shutdownTimes = entries.Where(x => x.InstanceId == 2147489654).Select(x => x.TimeWritten);
+                if (shutdownTimes != null && shutdownTimes.Count() != 0)
+                    return shutdownTimes.Max();
+                else return DateTime.MinValue;
+            }
+            else return DateTime.MinValue;
         }
     }
 }
