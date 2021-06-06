@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SQLite;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MyStartup
@@ -92,7 +87,10 @@ namespace MyStartup
             this.cbNotAutoVisit.CheckedChanged +=
                 new System.EventHandler(this.CbNotAutoVisit_CheckedChanged);
 
-            StartWithSystem.SetStartWithSystem(this.cbStartWithSystem.Checked);
+            if (!Debugger.IsAttached)
+            {
+                StartWithSystem.SetStartWithSystem(this.cbStartWithSystem.Checked);
+            }
 
             if (this.cbBlockSystemSleep.Checked)
             {
@@ -252,15 +250,16 @@ namespace MyStartup
                     dic[strDomain] > lastVisit)
                 {
                     gridViewData.Rows[i][4] = dic[strDomain].ToString("yyyy-MM-dd HH:mm:ss");
+
+                    double setDays = Convert.ToDouble(gridViewData.Rows[i][3]);
+                    long needTime = Convert.ToInt64((dic[strDomain] - DateTime.Now).TotalSeconds + setDays * 86400);
+                    gridViewData.Rows[i][5] = string.Format("{0:F}", (double)needTime / 3600);
                 }
             }
         }
 
         private void ThreadAction()
         {
-            Func<bool> IsInNotAutoVisitFunc = IsInNotAutoVisit;
-            Action UpdateDataGridViewAction = UpdateDataGridView;
-
             while (!exitFlag)
             {
                 for (int i = 0; i < 300; i++)
@@ -270,50 +269,63 @@ namespace MyStartup
                 }
                 if (exitFlag) break;
 
-                if (this.RunningFullScreenApp ||
-                    Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc)) ||
-                    Process.GetProcessesByName("Chrome").Length == 0) continue;
+                if (this.RunningFullScreenApp || IsInNotAutoVisit()) continue;
 
                 lock (lockThreadObject)
                 {
                     List<int> indexList = null;
-                    while ((indexList = UpdateNeededTime()).Count > 0)
-                    { VisitURLs(indexList); }
+                    if ((indexList = UpdateNeededTime()).Count > 0)
+                    { VisitURLs(indexList, false); }
 
-                    this.Invoke(UpdateDataGridViewAction);
+                    UpdateDataGridView();
                 }
             }
         }
 
         private bool IsInNotAutoVisit()
         {
-            bool rst = false;
-
-            this.cbNotAutoVisit.Enabled = false;
-            if (notAutoVisitTime != null)
+            if (this.InvokeRequired)
             {
-                if (DateTime.Now < notAutoVisitTime) rst = true;
-                else
-                {
-                    notAutoVisitTime = null;
-                    this.labelInfo.Text = "到 0000-00-00 00:00:00 结束";
-                    this.cbNotAutoVisit.CheckedChanged -=
-                        new System.EventHandler(this.CbNotAutoVisit_CheckedChanged);
-                    this.cbNotAutoVisit.Checked = false;
-                    this.textBoxDelayHour.Enabled = true;
-                    this.cbNotAutoVisit.CheckedChanged +=
-                        new System.EventHandler(this.CbNotAutoVisit_CheckedChanged);
-                }
+                Func<bool> IsInNotAutoVisitFunc = IsInNotAutoVisit;
+                return Convert.ToBoolean(this.Invoke(IsInNotAutoVisitFunc));
             }
-            this.cbNotAutoVisit.Enabled = true;
+            else
+            {
+                bool rst = false;
 
-            return rst;
+                this.cbNotAutoVisit.Enabled = false;
+                if (notAutoVisitTime != null)
+                {
+                    if (DateTime.Now < notAutoVisitTime) rst = true;
+                    else
+                    {
+                        notAutoVisitTime = null;
+                        this.labelInfo.Text = "到 0000-00-00 00:00:00 结束";
+                        this.cbNotAutoVisit.CheckedChanged -=
+                            new System.EventHandler(this.CbNotAutoVisit_CheckedChanged);
+                        this.cbNotAutoVisit.Checked = false;
+                        this.textBoxDelayHour.Enabled = true;
+                        this.cbNotAutoVisit.CheckedChanged +=
+                            new System.EventHandler(this.CbNotAutoVisit_CheckedChanged);
+                    }
+                }
+                this.cbNotAutoVisit.Enabled = true;
+
+                return rst;
+            }
         }
 
         private void UpdateDataGridView()
         {
-            this.dataGridView.DataSource = gridViewData;
-            this.dataGridView.Invalidate();
+            if (this.dataGridView.InvokeRequired)
+            {
+                this.dataGridView.Invoke(new Action(() => { UpdateDataGridView(); }));
+            }
+            else
+            {
+                this.dataGridView.DataSource = gridViewData;
+                this.dataGridView.Invalidate();
+            }
         }
 
         private List<int> UpdateNeededTime()
@@ -331,18 +343,26 @@ namespace MyStartup
             return indexList;
         }
 
-        private void VisitURLs(List<int> indexList)
+        private void VisitURLs(List<int> indexList, bool isIngoreChromeRunning)
         {
+            bool isChromeRunning =
+                (System.Diagnostics.Process.GetProcessesByName("Chrome").Length > 0);
+
             foreach (int index in indexList)
             {
                 bool isTooLong =
                     ((DateTime.Now - DateTime.Parse(gridViewData.Rows[index][4].ToString())).TotalSeconds >=
                     Convert.ToDouble(gridViewData.Rows[index][3]) * 86400 * 2);
 
-                if (isTooLong)
+                if (isTooLong || isIngoreChromeRunning || isChromeRunning)
                 {
                     System.Diagnostics.Process.Start(gridViewData.Rows[index][1].ToString());
                     gridViewData.Rows[index][4] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                    double setDays = Convert.ToDouble(gridViewData.Rows[index][3]);
+                    long needTime = Convert.ToInt64((DateTime.Parse(
+                        gridViewData.Rows[index][4].ToString()) - DateTime.Now).TotalSeconds + setDays * 86400);
+                    gridViewData.Rows[index][5] = string.Format("{0:F}", (double)needTime / 3600);
                 }
             }
         }
@@ -526,8 +546,8 @@ namespace MyStartup
                 gridViewData.Rows.Add(dr);
 
                 List<int> indexList = null;
-                while ((indexList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(indexList); }
+                if ((indexList = UpdateNeededTime()).Count > 0)
+                { VisitURLs(indexList, true); }
 
                 UpdateDataGridView();
             }
@@ -614,8 +634,7 @@ namespace MyStartup
 
             lock (lockThreadObject)
             {
-                do { VisitURLs(visitList); }
-                while ((visitList = UpdateNeededTime()).Count > 0);
+                VisitURLs(visitList, true);
 
                 UpdateDataGridView();
             }
@@ -682,8 +701,8 @@ namespace MyStartup
                     gridViewData.Rows[index][3] = interval;
                 }
 
-                while ((updateList = UpdateNeededTime()).Count > 0)
-                { VisitURLs(updateList); }
+                if ((updateList = UpdateNeededTime()).Count > 0)
+                { VisitURLs(updateList, true); }
 
                 UpdateDataGridView();
             }
